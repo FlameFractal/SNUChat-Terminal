@@ -26,7 +26,6 @@ public class msgSend extends Thread{
             String msg = "hi";
             DataOutputStream output = new DataOutputStream(sock.getOutputStream());
             while(!"bye".equals(msg)){
-                System.out.print("User : ");
                 msg = inp.nextLine();
                 output.writeUTF(msg);
             }
