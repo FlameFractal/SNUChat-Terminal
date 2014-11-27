@@ -27,11 +27,12 @@ public class TerminalChat {
         System.out.println("1.Start Server");
         System.out.println("2.Connect\nans: ");
         ans = inp.nextLine();
-        if( null != ans)switch (ans) {
-                case "server":
+        if( null != ans)
+            switch (ans) {
+                case "1":
                     sock = server();
                     break;
-                case "connect":
+                case "2":
                     System.out.print("Please enter the remote IP : ");
                     ip = inp.nextLine();
                     sock = connect(ip);
