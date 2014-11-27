@@ -27,6 +27,7 @@ public class msgRecv extends Thread{
             while(!"bye".equals(msg)){
                 msg = input.readUTF();
                 System.out.println("Remote : "+msg);
+                System.out.print("User : ");
             }
             
         }catch(IOException e){}
