@@ -28,7 +28,7 @@ public class msgRecv extends Thread{
                 //System.out.print("User : ");
                 msg = input.readUTF();
                 System.out.println(msg);
-                msg = "";
+                //msg = "";
             }
             
         }catch(IOException e){}

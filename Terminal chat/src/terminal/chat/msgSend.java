@@ -35,6 +35,7 @@ public class msgSend extends Thread{
             while(!"bye".equals(msg)){
                 msg = inp.nextLine();
                 output.writeUTF(user+" :" +msg);
+                
             }
             try {
                 statement.executeUpdate("UPDATE "+Table+" SET status = 'dead' WHERE Name = '"+user+"'");
