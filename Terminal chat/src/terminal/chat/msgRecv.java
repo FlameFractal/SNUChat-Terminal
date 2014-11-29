@@ -25,10 +25,8 @@ public class msgRecv extends Thread{
             String msg = "hi";
             DataInputStream input = new DataInputStream(sock.getInputStream());
             while(!"bye".equals(msg)){
-                //System.out.print("User : ");
                 msg = input.readUTF();
                 System.out.println(msg);
-                //msg = "";
             }
             
         }catch(IOException e){}

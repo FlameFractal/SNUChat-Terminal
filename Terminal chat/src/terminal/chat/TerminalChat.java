@@ -52,15 +52,16 @@ public class TerminalChat {
                             break;
                         case "2":
                             //Display name and availability of all records from the table
+                            showFriends();
                             System.out.print("Please enter your friend's username : ");
                             friend = inp.nextLine();
                             ResultSet ipList = statement.executeQuery("SELECT IP FROM "+Table+" WHERE Name='"+friend+"'");
                             ipList.next();
-                            System.out.println(ipList.getObject("IP"));
                             sock = connect(ipList.getObject("IP").toString());
                             statement.executeUpdate("UPDATE "+Table+" SET status = 'schrodinger' WHERE Name = '"+user+"'");
-                            break;
+                            
                     }
+                System.out.println("Connected! Say Hi! ");
             }while(!("1".equals(ans) || "2".equals(ans)));
             msgSend msgU = new msgSend(sock,user);
             msgRecv msgR = new msgRecv(sock);
@@ -102,7 +103,10 @@ public class TerminalChat {
             try {
                 ResultSet result = statement.executeQuery("SELECT PASSWORD FROM "+Table+" WHERE Name='"+user+"'");    
                 if(!result.first()){
-                    System.out.println("New here? Sign up!");
+                    System.out.print("New here? Sign up? y/n ? : ");
+                    String ans = input.next();
+                    if("n".equals(ans)) 
+                        continue;
                     System.out.print("Set your password : ");
                     String Password = input.nextLine();
                     String IP = Inet4Address.getLocalHost().getHostAddress();
@@ -119,7 +123,7 @@ public class TerminalChat {
                         System.out.println("Wrong Password. Try Again ");
                     }
                     else{
-                         String IP = Inet4Address.getLocalHost().getHostAddress().toString();
+                         String IP = Inet4Address.getLocalHost().getHostAddress();
                          statement.executeUpdate("UPDATE "+Table+" SET IP = '"+IP+"' WHERE Name = '"+user+"'");
                         System.out.println("Logged in! Happy Chatting!");
                         break;
@@ -131,5 +135,19 @@ public class TerminalChat {
             }
         }
         
+    }
+    public static void showFriends(){
+        try {
+            ResultSet resultSet = statement.executeQuery("SELECT NAME,STATUS FROM "+Table+" WHERE 1");
+            ResultSetMetaData met = resultSet.getMetaData();
+            int numberOfColumns = met.getColumnCount();
+            while(resultSet.next()){
+                for(int i=1;i<=numberOfColumns;i++)
+                    System.out.printf("%-8s\t", resultSet.getObject(i));
+                System.out.println();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(TerminalChat.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
