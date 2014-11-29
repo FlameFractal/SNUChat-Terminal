@@ -27,14 +27,14 @@ public class TerminalChat {
     static Connection connection = null;
     static Statement statement = null;
     static String user;
+    static String friend;
     public static void main(String[] args) {
-        ResultSet result = null;
+        
         try {
             connection = DriverManager.getConnection(DATABASE_URL, DUserName, DPassword);
             statement = connection.createStatement();
             Socket sock = null;
             String ans;
-            String friend;
            // ResultSet ip;
             Scanner inp = new Scanner(System.in);
             
@@ -54,8 +54,10 @@ public class TerminalChat {
                             //Display name and availability of all records from the table
                             System.out.print("Please enter your friend's username : ");
                             friend = inp.nextLine();
-                            ResultSet ip=statement.executeQuery("SELECT IP FROM "+Table+" WHERE Name='"+friend+"'");
-                            sock = connect(ip.toString());
+                            ResultSet ipList = statement.executeQuery("SELECT IP FROM "+Table+" WHERE Name='"+friend+"'");
+                            ipList.next();
+                            System.out.println(ipList.getObject("IP"));
+                            sock = connect(ipList.getObject("IP").toString());
                             statement.executeUpdate("UPDATE "+Table+" SET status = 'schrodinger' WHERE Name = '"+user+"'");
                             break;
                     }
