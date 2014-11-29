@@ -39,6 +39,9 @@ public class TerminalChat {
             Scanner inp = new Scanner(System.in);
             
             createUser();
+            ResultSet result = statement.executeQuery("SELECT NAME FROM "+Table+" WHERE NAME = '"+user+"'");
+            result.next();
+            user = result.getObject("Name").toString();
             do{
                 System.out.println("1.Make Available");
                 System.out.print("2.Chat with a friend\n1 or 2? ");
