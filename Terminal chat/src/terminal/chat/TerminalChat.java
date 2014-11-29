@@ -26,7 +26,7 @@ public class TerminalChat {
     static final String Table = "users";
     static Connection connection = null;
     static Statement statement = null;
-    
+    static String user;
     public static void main(String[] args) {
         ResultSet result = null;
         try {
@@ -41,11 +41,13 @@ public class TerminalChat {
             createUser();
             do{
                 System.out.println("1.Make Available");
-                System.out.println("2.Chat with a friend\nans: ");
+                System.out.print("2.Chat with a friend\n1 or 2? ");
                 ans = inp.nextLine();
                 if( null != ans)
                     switch (ans) {
                         case "1":
+                            statement.executeUpdate("UPDATE "+Table+" SET status = 'alive' WHERE Name = '"+user+"'");
+                            System.out.println("Done. Wait for your friend to connect to you!");
                             sock = server();
                             break;
                         case "2":
@@ -54,10 +56,11 @@ public class TerminalChat {
                             friend = inp.nextLine();
                             ResultSet ip=statement.executeQuery("SELECT IP FROM "+Table+" WHERE Name='"+friend+"'");
                             sock = connect(ip.toString());
+                            statement.executeUpdate("UPDATE "+Table+" SET status = 'schrodinger' WHERE Name = '"+user+"'");
                             break;
                     }
             }while(!("1".equals(ans) || "2".equals(ans)));
-            msgSend msgU = new msgSend(sock);
+            msgSend msgU = new msgSend(sock,user);
             msgRecv msgR = new msgRecv(sock);
             
             msgU.start();
@@ -92,37 +95,36 @@ public class TerminalChat {
     public static void createUser(){
         while(true){
             Scanner input = new Scanner(System.in);
-            System.out.print("Enter the UserName : ");
-            String user = input.nextLine();
+            System.out.print("Enter your username : ");
+            user = input.nextLine();
             try {
                 ResultSet result = statement.executeQuery("SELECT PASSWORD FROM "+Table+" WHERE Name='"+user+"'");    
                 if(!result.first()){
                     System.out.println("New here? Sign up!");
-                    System.out.print("Enter your password : ");
+                    System.out.print("Set your password : ");
                     String Password = input.nextLine();
                     String IP = Inet4Address.getLocalHost().getHostAddress();
                     statement.executeUpdate("INSERT INTO "+Table+" VALUES('"+user+"','"+Password+"','"+IP+"','alive')");
-                    System.out.println("User Created. Happy chatting");
+                    System.out.println("User Created! Happy chatting!");
                     break;
                 }
                 else{
                     System.out.println("Welcome back!");
                    // System.out.println(result.getObject("PASSWORD"));
-                    System.out.println("Enter the password");
+                    System.out.print("Enter your password : ");
                     String Password = input.nextLine();
                     if(!result.getObject("PASSWORD").toString().equals(Password)){
-                        System.out.println("Password is Wrong");
+                        System.out.println("Wrong Password. Try Again ");
                     }
                     else{
-                         String IP = Inet4Address.getLocalHost().getHostAddress();
-                         statement.executeUpdate("Update "+Table+" Set IP = "+IP+" where Name ='"+user+"'");
+                         String IP = Inet4Address.getLocalHost().getHostAddress().toString();
+                         statement.executeUpdate("UPDATE "+Table+" SET IP = '"+IP+"' WHERE Name = '"+user+"'");
                         System.out.println("Logged in! Happy Chatting!");
                         break;
                     }
                 }
-            } catch (SQLException ex) {
+            } catch (SQLException | UnknownHostException ex) {
                 //System.out.println("User doesn't exist");
-            } catch (UnknownHostException ex) {
                 Logger.getLogger(TerminalChat.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
