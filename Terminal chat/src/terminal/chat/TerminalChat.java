@@ -34,13 +34,14 @@ public class TerminalChat {
             statement = connection.createStatement();
             Socket sock = null;
             String ans;
-            String ip;
+            String friend;
+           // ResultSet ip;
             Scanner inp = new Scanner(System.in);
             
             createUser();
             do{
-                System.out.println("1.Start Server");
-                System.out.println("2.Connect\nans: ");
+                System.out.println("1.Make Available");
+                System.out.println("2.Chat with a friend\nans: ");
                 ans = inp.nextLine();
                 if( null != ans)
                     switch (ans) {
@@ -48,9 +49,11 @@ public class TerminalChat {
                             sock = server();
                             break;
                         case "2":
-                            System.out.print("Please enter the remote IP : ");
-                            ip = inp.nextLine();
-                            sock = connect(ip);
+                            //Display name and availability of all records from the table
+                            System.out.print("Please enter your friend's username : ");
+                            friend = inp.nextLine();
+                            ResultSet ip=statement.executeQuery("SELECT IP FROM "+Table+" WHERE Name='"+friend+"'");
+                            sock = connect(ip.toString());
                             break;
                     }
             }while(!("1".equals(ans) || "2".equals(ans)));
@@ -94,7 +97,8 @@ public class TerminalChat {
             try {
                 ResultSet result = statement.executeQuery("SELECT PASSWORD FROM "+Table+" WHERE Name='"+user+"'");    
                 if(!result.first()){
-                    System.out.print("Enter the password : ");
+                    System.out.println("New here? Sign up!");
+                    System.out.print("Enter your password : ");
                     String Password = input.nextLine();
                     String IP = Inet4Address.getLocalHost().getHostAddress();
                     statement.executeUpdate("INSERT INTO "+Table+" VALUES('"+user+"','"+Password+"','"+IP+"','alive')");
@@ -102,19 +106,22 @@ public class TerminalChat {
                     break;
                 }
                 else{
-                    System.out.println(result.getObject("PASSWORD"));
+                    System.out.println("Welcome back!");
+                   // System.out.println(result.getObject("PASSWORD"));
                     System.out.println("Enter the password");
                     String Password = input.nextLine();
                     if(!result.getObject("PASSWORD").toString().equals(Password)){
                         System.out.println("Password is Wrong");
                     }
                     else{
+                         String IP = Inet4Address.getLocalHost().getHostAddress();
+                         statement.executeUpdate("Update "+Table+" Set IP = "+IP+" where Name ='"+user+"'");
                         System.out.println("Logged in! Happy Chatting!");
                         break;
                     }
                 }
             } catch (SQLException ex) {
-                System.out.println("User doesn't exist");
+                //System.out.println("User doesn't exist");
             } catch (UnknownHostException ex) {
                 Logger.getLogger(TerminalChat.class.getName()).log(Level.SEVERE, null, ex);
             }
