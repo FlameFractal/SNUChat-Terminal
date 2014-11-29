@@ -11,39 +11,57 @@ package terminal.chat;
  */
 import java.io.*;
 import java.net.*;
+import java.sql.*;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 public class TerminalChat {
 
     /**
      * @param args the command line arguments
      */
+    static final String DATABASE_URL = "jdbc:mysql://sql4.freemysqlhosting.net/sql459803";
+    static final String DUserName = "sql459803";
+    static final String DPassword = "aL8!rK4!";
+    static final String Table = "users";
+    static Connection connection = null;
+    static Statement statement = null;
+    
     public static void main(String[] args) {
-        Socket sock = null;
-        String ans;
-        String ip;
-        Scanner inp = new Scanner(System.in);
-        
-        do{
-        System.out.println("1.Start Server");
-        System.out.println("2.Connect\nans: ");
-        ans = inp.nextLine();
-        if( null != ans)
-            switch (ans) {
-                case "1":
-                    sock = server();
-                    break;
-                case "2":
-                    System.out.print("Please enter the remote IP : ");
-                    ip = inp.nextLine();
-                    sock = connect(ip);
-                    break;
-            }
-        }while(!("1".equals(ans) || "2".equals(ans)));
-        msgSend msgU = new msgSend(sock);
-        msgRecv msgR = new msgRecv(sock);
-        
-        msgU.start();
-        msgR.start();
+        ResultSet result = null;
+        try {
+            connection = DriverManager.getConnection(DATABASE_URL, DUserName, DPassword);
+            statement = connection.createStatement();
+            Socket sock = null;
+            String ans;
+            String ip;
+            Scanner inp = new Scanner(System.in);
+            
+            createUser();
+            do{
+                System.out.println("1.Start Server");
+                System.out.println("2.Connect\nans: ");
+                ans = inp.nextLine();
+                if( null != ans)
+                    switch (ans) {
+                        case "1":
+                            sock = server();
+                            break;
+                        case "2":
+                            System.out.print("Please enter the remote IP : ");
+                            ip = inp.nextLine();
+                            sock = connect(ip);
+                            break;
+                    }
+            }while(!("1".equals(ans) || "2".equals(ans)));
+            msgSend msgU = new msgSend(sock);
+            msgRecv msgR = new msgRecv(sock);
+            
+            msgU.start();
+            msgR.start();
+        } catch (SQLException ex) {
+            Logger.getLogger(TerminalChat.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public static Socket connect(String ip){
@@ -66,5 +84,41 @@ public class TerminalChat {
             System.out.println(e);
             return null;
         }
+    }
+    
+    public static void createUser(){
+        while(true){
+            Scanner input = new Scanner(System.in);
+            System.out.print("Enter the UserName : ");
+            String user = input.nextLine();
+            try {
+                ResultSet result = statement.executeQuery("SELECT PASSWORD FROM "+Table+" WHERE Name='"+user+"'");    
+                if(!result.first()){
+                    System.out.print("Enter the password : ");
+                    String Password = input.nextLine();
+                    String IP = Inet4Address.getLocalHost().getHostAddress();
+                    statement.executeUpdate("INSERT INTO "+Table+" VALUES('"+user+"','"+Password+"','"+IP+"','alive')");
+                    System.out.println("User Created. Happy chatting");
+                    break;
+                }
+                else{
+                    System.out.println(result.getObject("PASSWORD"));
+                    System.out.println("Enter the password");
+                    String Password = input.nextLine();
+                    if(!result.getObject("PASSWORD").toString().equals(Password)){
+                        System.out.println("Password is Wrong");
+                    }
+                    else{
+                        System.out.println("Logged in! Happy Chatting!");
+                        break;
+                    }
+                }
+            } catch (SQLException ex) {
+                System.out.println("User doesn't exist");
+            } catch (UnknownHostException ex) {
+                Logger.getLogger(TerminalChat.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
     }
 }
